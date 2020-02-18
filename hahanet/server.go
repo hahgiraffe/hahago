@@ -6,11 +6,14 @@
 package hahanet
 
 import (
+	"errors"
 	"fmt"
+	"hahago/hahagoRPC"
 	"hahago/hahaiface"
 	"hahago/hahautils"
-	"log"
 	"net"
+	"reflect"
+	"sync"
 )
 
 type Server struct {
@@ -31,12 +34,18 @@ type Server struct {
 	OnConnStart func(conn hahaiface.IConnection)
 	//连接关闭之前调用的Hook函数
 	OnConnStop func(conn hahaiface.IConnection)
+
+	//RPC相关
+	ServiceMap map[string]map[string]*hahagoRPC.Service
+
+	serviceLock sync.Mutex
+
+	ServerType reflect.Type
 }
 
 func (s *Server) Start() {
 	//socket -> bind -> listen -> accept
-	fmt.Printf("Server %s start, listen addr at %s, port at %d\n", s.Name, s.IP, s.Port)
-
+	hahautils.HaHalog.Debugf("Server %s start, listen addr at %s, port at %d\n", s.Name, s.IP, s.Port)
 	//开启对象池
 	s.MsgHandler.StartWorkerPool()
 
@@ -45,27 +54,27 @@ func (s *Server) Start() {
 		//第一步先创建套接字并绑定ip和端口
 		tcpaddr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
-			log.Fatalln("ResolveTCPAdddr error")
+			hahautils.HaHalog.Fatal("ResolveTCPAddr error")
 			return
 		}
 		//第二步开始监听
 		listenner, err := net.ListenTCP(s.IPVersion, tcpaddr)
 		if err != nil {
-			log.Fatalf("ListenTCP error %s\n", err)
+			hahautils.HaHalog.Fatalf("ListenTCP error %s\n", err)
 		}
 		var cid uint32 = 0
 		//到这里已经给监听成功，开始阻塞等待连接并处理业务
 		for {
 			conn, err := listenner.AcceptTCP()
 			if err != nil {
-				log.Fatalf("AcceptTCP error %s\n", err)
+				hahautils.HaHalog.Fatal("AcceptTCP error ", err)
 				continue
 			}
 			// fmt.Printf("the %d client is connected\n", ClientNum)
 
 			if s.ConnMgr.Len() >= hahautils.GlobalObject.MaxConn {
 				//超过系统规定的最大连接个数
-				fmt.Println("too many connections")
+				hahautils.HaHalog.Info("too many connections")
 				conn.Close()
 				continue
 			}
@@ -94,18 +103,26 @@ func (s *Server) Serve() {
 
 func (s *Server) AddRouter(msgID uint32, router hahaiface.IRouter) {
 	s.MsgHandler.AddRouter(msgID, router)
-	fmt.Println("AddRouter success")
+	hahautils.HaHalog.Debug("AddRouter success")
 }
 
 func (s *Server) CheckConfig() {
 	//打印配置文件信息检验
-	fmt.Printf("[Config] ServerName : %s, ServerIPVersion : %s, ServerIP : %s, Server Port : %d", s.Name, s.IPVersion, s.IP, s.Port)
-	fmt.Printf(" ServerVersion : %s, ServerMaxConnections : %d, ServerMaxDataPackageSize : %d\n", hahautils.GlobalObject.Version,
+	hahautils.HaHalog.Debugf("[Config] ServerName : %s, ServerIPVersion : %s, ServerIP : %s, Server Port : %d", s.Name, s.IPVersion, s.IP, s.Port)
+	hahautils.HaHalog.Debugf(" ServerVersion : %s, ServerMaxConnections : %d, ServerMaxDataPackageSize : %d\n", hahautils.GlobalObject.Version,
 		hahautils.GlobalObject.MaxConn, hahautils.GlobalObject.MaxPackageSize)
 }
 
 func (s *Server) GetConnMgr() hahaiface.IConnManager {
 	return s.ConnMgr
+}
+
+func (s *Server) GetServiceMap() map[string]map[string]*hahagoRPC.Service {
+	return s.ServiceMap
+}
+
+func (s *Server) GetServerType() reflect.Type {
+	return s.ServerType
 }
 
 //注册OnConnStart连接调用方法
@@ -121,7 +138,7 @@ func (s *Server) SetOnConnStop(hookfunc func(connection hahaiface.IConnection)) 
 //调动OnConnStart
 func (s *Server) CallOnConnStart(conn hahaiface.IConnection) {
 	if s.OnConnStart != nil {
-		fmt.Println("call OnConnStart")
+		hahautils.HaHalog.Debug("call OnConnStart")
 		s.OnConnStart(conn)
 	}
 }
@@ -129,9 +146,44 @@ func (s *Server) CallOnConnStart(conn hahaiface.IConnection) {
 //调用OnConnStop
 func (s *Server) CallOnConnStop(conn hahaiface.IConnection) {
 	if s.OnConnStop != nil {
-		fmt.Println("call OnConnStop")
+		hahautils.HaHalog.Debug("call OnConnStop")
 		s.OnConnStop(conn)
 	}
+}
+
+func (server *Server) Register(obj interface{}) error {
+	server.serviceLock.Lock()
+	defer server.serviceLock.Unlock()
+
+	//通过obj得到其各个方法，存储在servicesMap中
+	tp := reflect.TypeOf(obj)
+	val := reflect.ValueOf(obj)
+	serviceName := reflect.Indirect(val).Type().Name()
+	if _, ok := server.ServiceMap[serviceName]; ok {
+		return errors.New(serviceName + " already registed.")
+	}
+
+	s := make(map[string]*hahagoRPC.Service)
+	numMethod := tp.NumMethod()
+	for m := 0; m < numMethod; m++ {
+		service := new(hahagoRPC.Service)
+		method := tp.Method(m)
+		mtype := method.Type
+		mname := method.Name
+
+		service.ArgType = mtype.In(1)
+		service.ReplyType = mtype.In(2)
+		service.Method = method
+		s[mname] = service
+
+		err := hahagoRPC.RegisterGobArgsType(service.ArgType)
+		if err != nil {
+			return err
+		}
+	}
+	server.ServiceMap[serviceName] = s
+	server.ServerType = reflect.TypeOf(obj)
+	return nil
 }
 
 //初始化实例
@@ -144,6 +196,9 @@ func NewServer(name string) hahaiface.IServer {
 		// Router:    nil,
 		MsgHandler: NewMsgHandler(),
 		ConnMgr:    NewConnManager(),
+
+		ServiceMap:  make(map[string]map[string]*hahagoRPC.Service),
+		serviceLock: sync.Mutex{},
 	}
 	return s
 }

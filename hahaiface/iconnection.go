@@ -5,7 +5,9 @@
  */
 package hahaiface
 
-import "net"
+import (
+	"net"
+)
 
 //连接接口
 type IConnection interface {
@@ -17,6 +19,8 @@ type IConnection interface {
 	GetTCPConnection() *net.TCPConn
 	//获取连接ID
 	GetConnID() uint32
+	//获取TCPServer
+	GetTcpServer() IServer
 	//获取远程客户端TCP状态（ip，port）
 	RemoteAddr() net.Addr
 	//发送数据

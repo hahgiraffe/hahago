@@ -1,9 +1,14 @@
 /*
  * @Author: haha_giraffe
  * @Date: 2020-01-30 17:12:40
- * @Description: 接口
+ * @Description: 服务器接口
  */
 package hahaiface
+
+import (
+	"hahago/hahagoRPC"
+	"reflect"
+)
 
 //服务接口
 type IServer interface {
@@ -17,7 +22,11 @@ type IServer interface {
 	AddRouter(msgID uint32, router IRouter)
 	//获取连接管理器
 	GetConnMgr() IConnManager
-
+	//获取服务映射表
+	GetServiceMap() map[string]map[string]*hahagoRPC.Service
+	//获取服务类型
+	GetServerType() reflect.Type
+	Register(interface{}) error
 	//注册OnConnStart连接调用方法
 	SetOnConnStart(func(connection IConnection))
 	//注册OnConnStop方法

@@ -7,8 +7,8 @@ package hahanet
 
 import (
 	"errors"
-	"fmt"
 	"hahago/hahaiface"
+	"hahago/hahautils"
 	"sync"
 )
 
@@ -25,7 +25,7 @@ func (cm *ConnManager) Add(conn hahaiface.IConnection) {
 	defer cm.connLock.Unlock()
 
 	cm.connections[conn.GetConnID()] = conn
-	fmt.Printf("connection %d added \n", conn.GetConnID())
+	hahautils.HaHalog.Debugf("connection %d added \n", conn.GetConnID())
 }
 
 func (cm *ConnManager) Remove(conn hahaiface.IConnection) {
@@ -33,7 +33,7 @@ func (cm *ConnManager) Remove(conn hahaiface.IConnection) {
 	defer cm.connLock.Unlock()
 
 	delete(cm.connections, conn.GetConnID())
-	fmt.Printf("connection %d deleted \n", conn.GetConnID())
+	hahautils.HaHalog.Debugf("connection %d deleted \n", conn.GetConnID())
 }
 
 func (cm *ConnManager) Get(connID uint32) (hahaiface.IConnection, error) {
@@ -59,7 +59,7 @@ func (cm *ConnManager) ClearConn() {
 		conn.Stop()
 		delete(cm.connections, connID)
 	}
-	fmt.Printf("clear all connections")
+	hahautils.HaHalog.Debug("clear all connections")
 }
 
 //创建连接管理初始化对象

@@ -7,7 +7,6 @@ package hahanet
 
 import (
 	"errors"
-	"fmt"
 	"hahago/hahaiface"
 	"hahago/hahautils"
 	"io"
@@ -40,8 +39,8 @@ type Connection struct {
 
 //服务器从客户端读数据的方法
 func (c *Connection) StartRead() {
-	fmt.Println("[Read goroutine is running]")
-	defer fmt.Printf("[Read is ending, connID %d]\n", c.ConnID)
+	hahautils.HaHalog.Debug("[Read goroutine is running]")
+	defer hahautils.HaHalog.Debugf("[Read is ending, connID %d]\n", c.ConnID)
 	defer c.Stop()
 
 	for {
@@ -55,13 +54,13 @@ func (c *Connection) StartRead() {
 			if err == io.EOF {
 				break
 			}
-			fmt.Println("readfull error ", err)
+			hahautils.HaHalog.Error("readfull error ", err)
 			break
 		}
 
 		msg, err := dp.Unpack(headData)
 		if err != nil {
-			fmt.Println("unpack error ", err)
+			hahautils.HaHalog.Error("unpack error ", err)
 			break
 		}
 		//根据长度读取body数据并放到message中
@@ -69,7 +68,7 @@ func (c *Connection) StartRead() {
 		if msg.GetMessageLen() > 0 {
 			body = make([]byte, msg.GetMessageLen())
 			if _, err := io.ReadFull(c.GetTCPConnection(), body); err != nil {
-				fmt.Println("readbody full error ", err)
+				hahautils.HaHalog.Error("readbody full error ", err)
 				break
 			}
 		}
@@ -92,14 +91,14 @@ func (c *Connection) StartRead() {
 
 //服务器发送给客户端的方法
 func (c *Connection) StartWrite() {
-	fmt.Println("[Writer goroutine running]")
-	defer fmt.Println(c.RemoteAddr().String(), " [conn Writer exit]")
+	hahautils.HaHalog.Debug("[Writer goroutine running]")
+	defer hahautils.HaHalog.Debug(c.RemoteAddr().String(), " [conn Writer exit]")
 
 	for {
 		select {
 		case data := <-c.MsgChan:
 			if _, err := c.Conn.Write(data); err != nil {
-				fmt.Println("send data error ", err)
+				hahautils.HaHalog.Error("send data error ", err)
 				return
 			}
 		case <-c.ExitChan:
@@ -150,6 +149,10 @@ func (c *Connection) GetConnID() uint32 {
 	return c.ConnID
 }
 
+func (c *Connection) GetTcpServer() hahaiface.IServer {
+	return c.TcpServer
+}
+
 //获取远程客户端TCP状态（ip，port）
 func (c *Connection) RemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
@@ -164,7 +167,7 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	dp := NewDataPack()
 	binarymsg, err := dp.Pack(NewMsgPackage(msgId, data))
 	if err != nil {
-		fmt.Println("dp pack error ", err)
+		hahautils.HaHalog.Error("dp pack error ", err)
 		return errors.New("dp pack error")
 	}
 

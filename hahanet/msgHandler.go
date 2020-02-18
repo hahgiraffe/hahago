@@ -6,7 +6,6 @@
 package hahanet
 
 import (
-	"fmt"
 	"hahago/hahaiface"
 	"hahago/hahautils"
 )
@@ -24,7 +23,7 @@ type MsgHandle struct {
 func (mhd *MsgHandle) DoMsgHandle(req hahaiface.IRequest) {
 	router, ok := mhd.Apis[req.GetMsgID()]
 	if !ok {
-		fmt.Println("MsgID not found")
+		hahautils.HaHalog.Error("MsgID not found")
 		return
 	}
 	router.PostHandle(req)
@@ -36,17 +35,17 @@ func (mhd *MsgHandle) DoMsgHandle(req hahaiface.IRequest) {
 func (mhd *MsgHandle) AddRouter(msgID uint32, router hahaiface.IRouter) {
 	//如果map中已经注册了msgID则不更新
 	if _, ok := mhd.Apis[msgID]; ok {
-		fmt.Printf("msg %d has registed\n", msgID)
+		hahautils.HaHalog.Errorf("msg %d has registed\n", msgID)
 		return
 	}
 	mhd.Apis[msgID] = router
-	fmt.Printf("msg %d registe success\n", msgID)
+	hahautils.HaHalog.Debugf("msg %d registe success\n", msgID)
 
 }
 
 //启动Worker对象池
 func (mh *MsgHandle) StartWorkerPool() {
-	fmt.Println("WorkerPool start")
+	hahautils.HaHalog.Debug("WorkerPool start")
 	for i := 0; i < int(mh.WorkerPoolSize); i++ {
 		mh.TaskQueue[i] = make(chan hahaiface.IRequest, hahautils.GlobalObject.MaxWorkerTaskLen)
 		go mh.StartOneWorker(i, mh.TaskQueue[i])
@@ -56,7 +55,7 @@ func (mh *MsgHandle) StartWorkerPool() {
 //Worker对象池中的每个对象的工作流程
 func (mh *MsgHandle) StartOneWorker(workerID int, taskqueue chan hahaiface.IRequest) {
 	//阻塞等待消息到来
-	fmt.Println("WorkerID ", workerID, " is started...")
+	hahautils.HaHalog.Debug("WorkerID ", workerID, " is started...")
 	for {
 		select {
 		case req := <-taskqueue:
@@ -70,7 +69,7 @@ func (mh *MsgHandle) StartOneWorker(workerID int, taskqueue chan hahaiface.IRequ
 func (mh *MsgHandle) SendMsgToTaskQueue(req hahaiface.IRequest) {
 	//负载均衡采用轮询分配，根据连接ID分配
 	workerID := req.GetConnection().GetConnID() % mh.WorkerPoolSize
-	fmt.Println("connID ", req.GetConnection().GetConnID(), " send msgID ", req.GetMsgID(), " to taskqueueID ", workerID)
+	hahautils.HaHalog.Debug("connID ", req.GetConnection().GetConnID(), " send msgID ", req.GetMsgID(), " to taskqueueID ", workerID)
 	mh.TaskQueue[workerID] <- req
 }
 
