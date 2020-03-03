@@ -1,50 +1,49 @@
 /*
  * @Author: haha_giraffe
- * @Date: 2020-02-18 17:48:32
+ * @Date: 2020-02-18 21:20:35
  * @Description: file content
  */
 package main
 
 import (
 	"fmt"
-	"hahago/hahagoRPC"
-	"net"
+	"hahago/rpcclient"
 )
 
+//调用参数类型（注意要和server注册的参数类型一直）
 type Args struct {
 	A int
 	B string
 }
 
+//返回参数类型（注意要和server注册的参数类型一直）
 type ReplyArgs struct {
 	Replynum int
 	Replystr string
 }
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:1234")
-	if err != nil {
-		fmt.Println("Dial error ", err)
-	}
-	defer conn.Close()
 
-	client := hahagoRPC.NewClient(conn)
-	defer client.Close()
+	//请求的ip地址即端口号
+	addrport := "127.0.0.1:8888"
 
-	var reply ReplyArgs
-	args := Args{
+	//
+	funcname := "Chs.Multiply"
+
+	//
+	req := Args{
 		A: 4,
 		B: "chschs",
 	}
-	if err := client.Call("Chs.Multiply", args, &reply); err != nil {
-		fmt.Println("NewClient call error ", err)
-	}
-	fmt.Println("the reply is ", reply)
 
-	var reply2 ReplyArgs
-	if err := client.Call("Chs.Add", args, &reply2); err != nil {
-		fmt.Println("NewClient call error ", err)
-	}
-	fmt.Println("the reply is ", reply2)
+	//
+	var reply ReplyArgs
 
+	err := rpcclient.RPCcall(addrport, funcname, req, &reply)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("recive Data %v\n", reply)
 }

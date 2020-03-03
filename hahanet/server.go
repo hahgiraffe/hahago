@@ -36,13 +36,17 @@ type Server struct {
 	OnConnStop func(conn hahaiface.IConnection)
 
 	//RPC相关
+	//服务映射表，第一个map的key是服务名称，value又是一个map，这个map的key是函数名称，value是函数类型
 	ServiceMap map[string]map[string]*hahagoRPC.Service
 
+	//互斥锁
 	serviceLock sync.Mutex
 
+	//服务类型
 	ServerType reflect.Type
 }
 
+//开启服务
 func (s *Server) Start() {
 	//socket -> bind -> listen -> accept
 	hahautils.HaHalog.Debugf("Server %s start, listen addr at %s, port at %d\n", s.Name, s.IP, s.Port)
@@ -87,11 +91,13 @@ func (s *Server) Start() {
 	}()
 }
 
+//关闭服务
 func (s *Server) Stop() {
 	//关闭所有连接
 	s.ConnMgr.ClearConn()
 }
 
+//运行服务
 func (s *Server) Serve() {
 	//因为Start是非阻塞的，所以要在Serve中阻塞，并且可以处理一些其他业务逻辑
 	s.CheckConfig()
@@ -101,11 +107,13 @@ func (s *Server) Serve() {
 
 }
 
+//添加路由方法
 func (s *Server) AddRouter(msgID uint32, router hahaiface.IRouter) {
 	s.MsgHandler.AddRouter(msgID, router)
 	hahautils.HaHalog.Debug("AddRouter success")
 }
 
+//检配置信息
 func (s *Server) CheckConfig() {
 	//打印配置文件信息检验
 	hahautils.HaHalog.Debugf("[Config] ServerName : %s, ServerIPVersion : %s, ServerIP : %s, Server Port : %d", s.Name, s.IPVersion, s.IP, s.Port)
@@ -113,14 +121,17 @@ func (s *Server) CheckConfig() {
 		hahautils.GlobalObject.MaxConn, hahautils.GlobalObject.MaxPackageSize)
 }
 
+//获取连接管理器
 func (s *Server) GetConnMgr() hahaiface.IConnManager {
 	return s.ConnMgr
 }
 
+//获取服务映射表
 func (s *Server) GetServiceMap() map[string]map[string]*hahagoRPC.Service {
 	return s.ServiceMap
 }
 
+//获取服务类型
 func (s *Server) GetServerType() reflect.Type {
 	return s.ServerType
 }
@@ -151,6 +162,7 @@ func (s *Server) CallOnConnStop(conn hahaiface.IConnection) {
 	}
 }
 
+//注册RPC
 func (server *Server) Register(obj interface{}) error {
 	server.serviceLock.Lock()
 	defer server.serviceLock.Unlock()

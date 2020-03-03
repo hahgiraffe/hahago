@@ -1,9 +1,9 @@
 /*
  * @Author: haha_giraffe
- * @Date: 2020-02-18 17:59:17
+ * @Date: 2020-03-03 20:48:03
  * @Description: file content
  */
-package main
+package rpcserver
 
 import (
 	"fmt"
@@ -14,44 +14,15 @@ import (
 	"strings"
 )
 
-type Args struct {
-	A int
-	B string
-}
-
-type ReplyArgs struct {
-	Replynum int
-	Replystr string
-}
-
-type ChsInt struct {
-	name   string
-	age    int
-	school string
-}
-
-type Chs int
-
-func (c *Chs) Multiply(args Args, reply *ReplyArgs) error {
-	obj := ChsInt{
-		name:   "hahagiraffe",
-		age:    10,
-		school: "hust",
-	}
-	fmt.Printf("get call Args : [%d %s]\n", args.A, args.B)
-	(*reply).Replynum = args.A * 5 * obj.age
-	(*reply).Replystr = args.B + obj.school
-	fmt.Printf("reply : [%d %s]\n", (*reply).Replynum, (*reply).Replystr)
-	return nil
-}
-
+//RPCRouter RPC特定的路由方法
 type RPCRouter struct {
 	hahanet.BaseRouter
 }
 
+//RPC路由对应的Handle
 func (rpc *RPCRouter) Handle(request hahaiface.IRequest) {
 	data := request.GetData()
-	fmt.Println(data)
+	// fmt.Println(data)
 
 	var req hahagoRPC.Request
 	err := hahagoRPC.Decode(data, &req)
@@ -79,7 +50,7 @@ func (rpc *RPCRouter) Handle(request hahaiface.IRequest) {
 		fmt.Println("functionCall error ", err)
 		return
 	}
-	fmt.Println("chs reply ", reply)
+	// fmt.Println("chs reply ", reply)
 	// encode
 	replyData, err := hahagoRPC.Encode(reply.Elem().Interface())
 	if err != nil {
@@ -92,11 +63,4 @@ func (rpc *RPCRouter) Handle(request hahaiface.IRequest) {
 		fmt.Println("SendMsg error ", err)
 		return
 	}
-}
-
-func main() {
-	s := hahanet.NewServer("chs")
-	s.Register(new(Chs))
-	s.AddRouter(0, &RPCRouter{})
-	s.Serve()
 }

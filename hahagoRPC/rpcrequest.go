@@ -9,6 +9,7 @@ import (
 	"reflect"
 )
 
+//请求结构体
 type Request struct {
 	//请求方法名称
 	MethodName string
@@ -21,6 +22,7 @@ func (request *Request) MakeArgs(service Service) (reflect.Value, error) {
 	return reflect.ValueOf(request.Args), nil
 }
 
+//新建一个请求结构体
 func NewRequest(methodName string, args interface{}) *Request {
 	return &Request{
 		MethodName: methodName,

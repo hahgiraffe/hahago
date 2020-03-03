@@ -16,7 +16,7 @@ func main() {
 	fmt.Println("Clinet begin")
 	time.Sleep(1 * time.Second)
 	for {
-		conn, err := net.Dial("tcp", "localhost:9999")
+		conn, err := net.Dial("tcp", "localhost:8888")
 		if err != nil {
 			log.Fatalf("Dial error %s\n", err)
 			return

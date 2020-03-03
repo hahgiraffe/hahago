@@ -26,6 +26,7 @@ type IServer interface {
 	GetServiceMap() map[string]map[string]*hahagoRPC.Service
 	//获取服务类型
 	GetServerType() reflect.Type
+	//注册服务
 	Register(interface{}) error
 	//注册OnConnStart连接调用方法
 	SetOnConnStart(func(connection IConnection))
