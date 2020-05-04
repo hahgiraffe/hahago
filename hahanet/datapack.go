@@ -9,8 +9,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"hahago/hahaiface"
-	"hahago/hahautils"
+	"github.com/hahgiraffe/hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahautils"
 )
 
 type DataPack struct{}

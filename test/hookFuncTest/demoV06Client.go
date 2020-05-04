@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"hahago/hahanet"
+	"github.com/hahgiraffe/hahago/hahanet"
 	"io"
 	"log"
 	"net"

@@ -6,8 +6,8 @@
 package haharpc
 
 import (
-	"hahago/hahaiface"
-	"hahago/hahanet"
+	"github.com/hahgiraffe/hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahanet"
 )
 
 type RpcServer struct {

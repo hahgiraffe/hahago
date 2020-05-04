@@ -8,9 +8,10 @@ package hahanet
 import (
 	"errors"
 	"fmt"
-	"hahago/hahagoRPC"
-	"hahago/hahaiface"
-	"hahago/hahautils"
+	"github.com/hahgiraffe/hahago/hahagoRPC"
+	"github.com/hahgiraffe/hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahautils"
+
 	"net"
 	"reflect"
 	"sync"

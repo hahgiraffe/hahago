@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"hahago/rpcclient"
+	"github.com/hahgiraffe/hahago/rpcclient"
 )
 
 //调用参数类型（注意要和server注册的参数类型一直）

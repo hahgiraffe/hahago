@@ -7,8 +7,8 @@ package main
 
 import (
 	"fmt"
-	"hahago/haharpc"
-)
+	"github.com/hahgiraffe/hahago/haharpc"
+	)
 
 func main() {
 	myclient, err := haharpc.NewRpcClient("127.0.0.1", "8888")

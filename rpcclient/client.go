@@ -8,8 +8,8 @@ package rpcclient
 import (
 	"errors"
 	"fmt"
-	"hahago/hahagoRPC"
-	"hahago/hahanet"
+	"github.com/hahgiraffe/hahago/hahagoRPC"
+	"github.com/hahgiraffe/hahago/hahanet"
 	"io"
 	"log"
 	"net"

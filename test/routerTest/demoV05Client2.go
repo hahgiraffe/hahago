@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"hahago/hahanet"
+	"github.com/hahgiraffe/hahago/hahanet"
 	"io"
 	"log"
 	"net"
@@ -29,8 +29,8 @@ func main() {
 		return
 	}
 	for {
-		var buf []byte = []byte("Client send msgID 0")
-		newmsg := hahanet.NewMsgPackage(0, buf)
+		var buf []byte = []byte("Client send msgID 1")
+		newmsg := hahanet.NewMsgPackage(1, buf)
 		dp := hahanet.NewDataPack()
 		senddata, err := dp.Pack(newmsg)
 		if err != nil {

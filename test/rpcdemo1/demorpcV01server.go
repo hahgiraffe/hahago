@@ -7,9 +7,9 @@ package main
 
 import (
 	"fmt"
-	"hahago/hahaiface"
-	"hahago/hahanet"
-	"hahago/haharpc"
+	"github.com/hahgiraffe/hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahanet"
+	"github.com/hahgiraffe/hahago/haharpc"
 	"strconv"
 )
 

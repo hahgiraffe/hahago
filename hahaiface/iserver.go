@@ -6,7 +6,7 @@
 package hahaiface
 
 import (
-	"hahago/hahagoRPC"
+	"github.com/hahgiraffe/hahago/hahagoRPC"
 	"reflect"
 )
 

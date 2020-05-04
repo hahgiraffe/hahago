@@ -6,7 +6,7 @@
 package hahanet
 
 import (
-	"hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahaiface"
 )
 
 //这里只是一个基类Router，用户使用的时候需要对方法进行重写就可以啦

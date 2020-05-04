@@ -7,8 +7,8 @@ package main
 
 import (
 	"fmt"
-	"hahago/hahanet"
-	"hahago/rpcserver"
+	"github.com/hahgiraffe/hahago/hahanet"
+	"github.com/hahgiraffe/hahago/rpcserver"
 )
 
 //请求参数类型

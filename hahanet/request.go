@@ -6,7 +6,7 @@
 package hahanet
 
 import (
-	"hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahaiface"
 )
 
 type Request struct {

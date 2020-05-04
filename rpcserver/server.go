@@ -7,9 +7,9 @@ package rpcserver
 
 import (
 	"fmt"
-	"hahago/hahagoRPC"
-	"hahago/hahaiface"
-	"hahago/hahanet"
+	"github.com/hahgiraffe/hahago/hahagoRPC"
+	"github.com/hahgiraffe/hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahanet"
 	"reflect"
 	"strings"
 )

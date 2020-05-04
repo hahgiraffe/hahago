@@ -8,7 +8,7 @@ package hahautils
 import (
 	"encoding/json"
 	"fmt"
-	"hahago/hahaiface"
+	"github.com/hahgiraffe/hahago/hahaiface"
 	"io/ioutil"
 )
 

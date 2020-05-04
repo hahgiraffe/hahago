@@ -8,7 +8,8 @@ package haharpc
 import (
 	"errors"
 	"fmt"
-	"hahago/hahanet"
+	"github.com/hahgiraffe/hahago/hahanet"
+
 	"io"
 	"net"
 )
