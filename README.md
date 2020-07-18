@@ -31,3 +31,5 @@ go get -u github.com/hahgraffe/hahago
 
 详细的服务器实例和RPC实例都在[例子](https://github.com/hahgiraffe/hahago/tree/master/test)
 
+## TODO
+增加负载均衡与服务发现功能
